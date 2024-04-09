@@ -131,7 +131,56 @@ void handleInsert(LinkedList* circuit) {
 
 void handleRemove(LinkedList* circuit) {
   // TODO: Implement the remove function
-  // WORK ON THIS
+  // WORK ON THIS --> in example 2 it didn't remove R1.
+
+  // prompting user input: specifying label of resistor to delete
+  char toDelete[STRING_MAX];  // label to delete
+  printf("What's the label of the resistor you want to remove: ");
+  readInputString(toDelete, STRING_MAX);
+
+  // list is empty
+  if (circuit->head == NULL) {
+    printf("The resistor with %s label does not exist.\n", toDelete);
+  }
+
+  // first node matches value
+  if (strncmp(circuit->head->name, toDelete, STRING_MAX) == 0) {
+    
+    // implement deleteFront
+    //save location of the node after head, so we don't lose rest of list
+    Node* newHead = circuit->head->next;
+    //free up memory used by current head
+    free(circuit->head);
+    //update current head to the saved location
+    circuit->head = newHead;
+    return;
+  }
+
+  // search for a node that matches the first value, but maintain a pointer to
+  // the node just before it
+  Node* current = circuit->head;
+  // while next exists & labels don't match
+  while (current->next != NULL &&
+         strncmp(current->next->name, toDelete, STRING_MAX) != 0) {
+    current = current->next;
+  }
+
+  // current now points to a node just before the node that matched
+  // OR current points to the last node
+  if (current->next != NULL) {
+    // current does not point to last node
+    Node* temp =
+        current->next;  // temp or current->next is node we want to delete
+    current->next = temp->next;  // current->next now points to the node after
+                                 // the one we want to delete
+    free(temp);
+    // successful so returns to main
+    return;
+  }
+
+  // if label not found
+  printf("The resistor with %s label does not exist.\n", toDelete);
+  return;
 }
 
 void handleCurrentCal(LinkedList* circuit, int voltage) {
@@ -169,8 +218,12 @@ void handleVoltage(LinkedList* circuit, int voltage) {
   double resistance;       // resistance of label we are looking for
   printf(
       "What's the label of the resistor you want to find the voltage across: ");
-  scanf(" %s", label);
-  // ERROR: REMEMBER TO USE READINPUTSTRING/CHAR/NUMBER!!
+  readInputString(label, STRING_MAX);
+
+  // list is empty
+  if (circuit->head == NULL) {
+    printf("The resistor with %s label does not exist.\n", label);
+  }
 
   // find a node with a specific resistor
   // currentResistor: current resistor the traversal is on
@@ -181,27 +234,28 @@ void handleVoltage(LinkedList* circuit, int voltage) {
       // found the node
       resistance = (double)(currentResistor->value);
       currentResistor = NULL;
-    } else {
-      currentResistor = currentResistor->next;
+      // finding total resistance
+      double totalResistance = 0;
+      Node* current = circuit->head;  // current: current node we are on
+      while (current != NULL) {
+        totalResistance += current->value;
+        current = current->next;
+      }
+
+      // find total current
+      double totalCurrent = ((double)voltage) / (totalResistance);
+
+      // find voltage across specified resistor
+      double voltageOfSpecifiedResistor = totalCurrent * (resistance);
+      printf("Voltage across resistor is %.6lfV\n", voltageOfSpecifiedResistor);
+      return;
     }
+    // did not find matching label, moving onto next node
+    currentResistor = currentResistor->next;
   }
 
-  // finding total resistance
-  double totalResistance = 0;
-  Node* current = circuit->head;  // current: current node we are on
-  while (current != NULL) {
-    totalResistance += current->value;
-    current = current->next;
-  }
-
-  // find total current
-  double totalCurrent = ((double)voltage) / (totalResistance);
-
-  // find voltage across specified resistor
-  double voltageOfSpecifiedResistor = totalCurrent * (resistance);
-  printf("Voltage across resistor is %.6lfV\n", voltageOfSpecifiedResistor);
-  return;
-  // WHY DOES MAIN OUTPUT "Invalid command <>, please select a command: "
+  // exits loop, meaning didn't find matching node
+  printf("The resistor with %s label does not exist.\n", label);
 }
 
 void handlePrint(LinkedList* circuit) {
