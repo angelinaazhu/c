@@ -141,6 +141,7 @@ void handleRemove(LinkedList* circuit) {
   // list is empty
   if (circuit->head == NULL) {
     printf("The resistor with %s label does not exist.\n", toDelete);
+    return;
   }
 
   // first node matches value
@@ -223,6 +224,7 @@ void handleVoltage(LinkedList* circuit, int voltage) {
   // list is empty
   if (circuit->head == NULL) {
     printf("The resistor with %s label does not exist.\n", label);
+    return;
   }
 
   // find a node with a specific resistor
